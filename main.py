@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
 import requests
 import subprocess
 import os
@@ -14,41 +13,11 @@ from botocore.exceptions import NoCredentialsError
 
 app = FastAPI()
 
-# S3 client setup
-s3 = boto3.client("s3")
-
-# セッションミドルウェアの設定
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY"))
-
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-def authenticate_user(username: str, password: str):
-    return username == os.environ.get("USERNAME") and password == os.environ.get(
-        "PASSWORD"
-    )
-
-
-def get_current_user(request: Request):
-    if "user" not in request.session:
-        return None
-    return request.session["user"]
-
-
-@app.get("/login")
-async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
-
-@app.post("/login")
-async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if authenticate_user(username, password):
-        request.session["user"] = username
-        return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(
-        "login.html", {"request": request, "invalid": True}
-    )
+# S3 client setup
+s3 = boto3.client("s3")
 
 
 def download_wheels(package_name):
@@ -84,18 +53,15 @@ def upload_to_s3(file_path, bucket_name, s3_file_name):
 
 @app.get("/")
 async def read_root(request: Request):
-    user = get_current_user(request)
-    if not user:
-        return RedirectResponse(url="/login")
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.post("/upload")
 async def upload_dependencies(
-    package_name: str = Form(...),
+    package_name: str = Form(...), bucket_name: str = Form(...)
 ):
     zip_path = download_wheels(package_name)
     s3_url = upload_to_s3(
-        zip_path, "dockerhub-sync", os.path.basename(zip_path)[: -len(".zip")]
+        zip_path, bucket_name, os.path.basename(zip_path)[: -len(".zip")]
     )
     return JSONResponse(content={"s3_url": s3_url})

@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dependency Downloader</title>
+    <title>Dependency Uploader</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <div class="container">
       <h1>Dependency Downloader</h1>
-      <h3>Note: Packages are for Python 3.8</h3>
+      <h3>Download all dependency packages for Python 3.8</h3>
       <p>Example: <code>openai</code></p>
       <form id="package-form">
         <input
@@ -17,6 +17,14 @@
           id="package-name"
           name="package_name"
           placeholder="Enter package name"
+          required
+        />
+        <h4>Check the policy to write S3 bucket before submit</h4>
+        <input
+          type="text"
+          id="bucket-name"
+          name="bucket_name"
+          placeholder="Enter S3 bucket name"
           required
         />
         <button type="submit">Upload</button>
