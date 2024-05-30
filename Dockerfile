@@ -1,7 +1,5 @@
-# ベースイメージとしてPython 3.9を使用
-FROM python:3.9
+FROM python:3.8
 
-# 作業ディレクトリを作成
 WORKDIR /app
 
 # requirements.txtをコンテナにコピーし、依存関係をインストール

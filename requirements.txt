@@ -3,3 +3,4 @@ uvicorn
 requests
 pip
 jinja2
+boto3
