@@ -52,6 +52,17 @@ input[type="text"] {
     font-size: 1em;
 }
 
+input[type="password"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #ff69b4;
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    font-size: 1em;
+}
+
+
 button {
     background-color: #ff69b4;
     color: white;
