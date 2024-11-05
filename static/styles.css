@@ -1,3 +1,10 @@
+/* ボックスサイズを統一 */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f0f8ff;
@@ -48,7 +55,11 @@ p {
     margin-bottom: 20px;
 }
 
-input[type="text"] {
+/* 入力フィールド、セレクトボックス、テキストエリアに共通のスタイルを適用 */
+input[type="text"],
+input[type="password"],
+select,
+textarea {
     width: calc(100% - 22px);
     padding: 10px;
     margin-bottom: 20px;
@@ -56,19 +67,30 @@ input[type="text"] {
     border-radius: 10px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
     font-size: 1em;
+    background-color: #fff;
+    resize: vertical; /* ユーザーが垂直方向にリサイズ可能 */
 }
 
-input[type="password"] {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 2px solid #ff69b4;
-    border-radius: 10px;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-    font-size: 1em;
+/* セレクトボックスのスタイル調整 */
+select {
+    -webkit-appearance: none; /* Safari and Chrome */
+    -moz-appearance: none; /* Firefox */
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%225%22%20viewBox%3D%220%200%2010%205%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5H0z%22%20fill%3D%22%23ff69b4%22/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 5px;
+    padding-right: 30px;
 }
 
+/* テキストエリアの追加スタイル（必要に応じて調整） */
+textarea {
+    min-height: 100px; /* 最小高さを設定 */
+    max-height: 300px; /* 最大高さを設定（必要に応じて変更） */
+    overflow-y: auto; /* 内容が多い場合にスクロール可能に */
+}
 
+/* ボタンスタイル */
 button {
     background-color: #ff69b4;
     color: white;

@@ -6,6 +6,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# install node 22.5.1
+RUN apt-get update && apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs
+
 # アプリケーションコードをコンテナにコピー
 COPY . .
 

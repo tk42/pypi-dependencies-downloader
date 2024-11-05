@@ -9,16 +9,13 @@
   <body>
     <div class="container">
       <h1>Dependency Downloader</h1>
-      <h3>Download all dependency packages for Python 3.8</h3>
-      <p>Example: <code>openai</code></p>
-      <form id="package-form">
-        <input
-          type="text"
-          id="package-name"
-          name="package_name"
-          placeholder="Enter package name"
-          required
-        />
+      <h3>Download all dependency packages</h3>
+      <p>
+        Example: <code>openai</code> Python (3.8) or,
+        <code>express</code> Node.js 22.5.1
+      </p>
+      <form id="package-form" action="/upload" method="post">
+        <textarea id="package-list" name="package_list" required></textarea>
         <h4>Check the policy to write S3 bucket before submit</h4>
         <input
           type="text"
@@ -27,6 +24,11 @@
           placeholder="Enter S3 bucket name"
           required
         />
+        <h4>Package Type:</h4>
+        <select id="package-type" name="package_type" required>
+          <option value="python">Python</option>
+          <option value="node">Node.js</option>
+        </select>
         <button type="submit">Upload</button>
       </form>
     </div>

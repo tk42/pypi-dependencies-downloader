@@ -2,17 +2,33 @@ document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("package-form");
     form.addEventListener("submit", function(event) {
         event.preventDefault();
-        const packageName = document.getElementById("package-name").value;
+        const packageList = document.getElementById("package-list").value;
         const bucketName = document.getElementById("bucket-name").value;
-        
+        const packageType = document.getElementById("package-type").value;
+        if (!packageList || !bucketName || !packageType) {
+            alert("Please fill in all fields.");
+            return;
+        }
+        if (!confirm("Are you sure you want to upload these files?")) {
+            return;
+        }
         fetch("/upload", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Type": "application/json",
             },
-            body: `package_name=${packageName}&bucket_name=${bucketName}`
+            body: JSON.stringify({
+                package_list: packageList,
+                bucket_name: bucketName,
+                package_type: packageType
+            })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.s3_url) {
                 alert(`File uploaded to S3: ${data.s3_url}`);
@@ -21,7 +37,13 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         })
         .catch(error => {
-            alert(error.message);
+            if (error.detail) {
+                alert(`Error: ${error.detail}`);
+            } else if (error.message) {
+                alert(`Error: ${error.message}`);
+            } else {
+                alert("An unexpected error occurred.");
+            }
         });
     });
 });
