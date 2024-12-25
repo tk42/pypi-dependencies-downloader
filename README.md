@@ -27,7 +27,7 @@ Access ```http://localhost:8000/``` and input the package name and the bucket na
 You can change the target version of the package in the ```Dockerfile```.
 
 ```Dockerfile
-FROM --platform=linux/amd64 python:3.8
+FROM --platform=linux/amd64 python:3.11
 ```
 
 to your target platform and target version.
