@@ -10,7 +10,6 @@ import shutil
 import boto3
 from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import NoCredentialsError
-from pydantic import BaseModel
 import logging
 
 
@@ -31,16 +30,32 @@ def download_wheels(package_list: str):
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir)
-    
-    with open(os.path.join(temp_dir, "requirements.txt"), "w") as f:
-        f.write(package_list)
 
-    subprocess.run(["pip", "download", "-r", "requirements.txt", "-d", temp_dir])
+    req_file = os.path.join(temp_dir, "requirements.txt")
+    with open(req_file, "w") as f:
+        f.write(package_list)
+    logger.info(f"Created requirements.txt with content: {package_list}")
+
+    try:
+        result = subprocess.run(
+            ["pip", "download", "-r", req_file, "-d", temp_dir, "--no-cache-dir"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        logger.info(f"pip download output: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"pip download failed: {e.stderr}")
+        raise
 
     wheel_files = [f for f in os.listdir(temp_dir) if f.endswith(".whl")]
-    zip_path = f"{temp_dir}.zip"
+    logger.info(f"Downloaded wheel files: {wheel_files}")
 
+    zip_path = f"{temp_dir}.zip"
     with zipfile.ZipFile(zip_path, "w") as zipf:
+        # requirements.txtを含める
+        zipf.write(req_file, arcname="requirements.txt")
+        # whlファイルを含める
         for file in wheel_files:
             zipf.write(os.path.join(temp_dir, file), arcname=file)
 
@@ -53,22 +68,25 @@ def download_node_modules(package_list: str):
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir)
-    
-    with open(os.path.join(temp_dir, "package.json"), "w") as f:
+
+    package_json_path = os.path.join(temp_dir, "package.json")
+    with open(package_json_path, "w") as f:
         f.write(package_list)
 
-    # Run npm install
     try:
         subprocess.run(["npm", "install"], cwd=temp_dir, check=True)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
+        logger.error(f"npm install failed: {e}")
         shutil.rmtree(temp_dir)
         return None
 
-    # Zip node_modules directory
     node_modules_dir = os.path.join(temp_dir, 'node_modules')
     zip_path = f"{temp_dir}.zip"
 
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Include package.json
+        zipf.write(package_json_path, arcname="package.json")
+        # Include node_modules contents
         for root, dirs, files in os.walk(node_modules_dir):
             for file in files:
                 file_path = os.path.join(root, file)
