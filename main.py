@@ -130,7 +130,11 @@ async def upload_dependencies(
         zip_path = download_node_modules(package_list)
     elif package_type == "cargo":
         dir_path = "crates"
-        zip_path = download_crates_from_fragment(package_list)
+        try:
+            zip_path = download_crates_from_fragment(package_list)
+        except Exception as e:
+            logger.error("cargo download failed: %s", e, exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Cargo dependency processing failed: {e}")
     else:
         raise HTTPException(status_code=400, detail="Invalid package type. Use 'python', 'node', or 'cargo'.")
 

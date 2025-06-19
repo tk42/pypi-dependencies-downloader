@@ -62,7 +62,12 @@ def parse_dependencies_fragment(fragment: str) -> Dict[str, str]:
     under the `[dependencies]` heading.  We prepend the heading so the TOML
     parser can handle it.
     """
-    toml_src = "[dependencies]\n" + fragment
+    # If the user already included the header, avoid duplicating it
+    fragment_stripped = fragment.strip()
+    if fragment_stripped.startswith("[dependencies]"):
+        toml_src = fragment_stripped
+    else:
+        toml_src = "[dependencies]\n" + fragment_stripped
     data = tomllib.loads(toml_src)
     deps: Dict[str, str | dict] = data["dependencies"]
 
@@ -116,7 +121,12 @@ def _version_prefix(requirement: str) -> str | None:
 
     # If the requirement is fully numeric (X or X.Y or X.Y.Z), treat as prefix
     if re.fullmatch(r"\d+(?:\.\d+){0,2}", requirement):
-        return requirement + "." if not requirement.endswith(".") and "." not in requirement[-1] else requirement
+        # If requirement has one or two numeric components it's a prefix (e.g. "1" or "1.2")
+        # If it has three components we treat it as an *exact* version.
+        if requirement.count(".") < 2:
+            return requirement + "."
+        else:
+            return requirement
 
     # fallback – exact
     return requirement
@@ -165,6 +175,11 @@ def _latest_satisfying_version(crate: str, requirement: str) -> Tuple[str, List[
             if v["num"] == requirement:
                 return v["num"], v["dependencies"]
         raise ValueError(f"No version {requirement} found for {crate}")
+
+    # Exact version fallback
+    for v in versions:
+        if v["num"] == requirement:
+            return v["num"], v["dependencies"]
 
     # prefix match
     candidates = [v for v in versions if v["num"].startswith(prefix)]
