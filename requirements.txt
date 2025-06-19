@@ -6,3 +6,4 @@ jinja2
 boto3
 itsdangerous
 python-multipart
+tomli

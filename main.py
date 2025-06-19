@@ -2,6 +2,8 @@ from fastapi import FastAPI, Body, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
+from cargo_downloader import download_crates_from_fragment
 import subprocess
 from datetime import datetime
 import os
@@ -126,8 +128,11 @@ async def upload_dependencies(
     elif package_type == "node":
         dir_path = "node_modules"
         zip_path = download_node_modules(package_list)
+    elif package_type == "cargo":
+        dir_path = "crates"
+        zip_path = download_crates_from_fragment(package_list)
     else:
-        raise HTTPException(status_code=400, detail="Invalid package type")
+        raise HTTPException(status_code=400, detail="Invalid package type. Use 'python', 'node', or 'cargo'.")
 
     if zip_path is None:
         raise HTTPException(status_code=500, detail="Failed to download package")
